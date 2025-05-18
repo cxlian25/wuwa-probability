@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  webapp:
+  wuwa-probability:
     image: cxlian/wuwa-probability:1.0
     ports:
       - "8091:8091"  # 主机端口:容器端口
@@ -12,6 +12,18 @@ services:
       - ./logs:/app/logs  # 挂载日志目录（按需配置）
     networks:
       - app-network
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443" # 如需HTTPS
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - wuwa-probability
+    networks:
+      - app-net
 
 # 自定义网络（可选）
 networks:
