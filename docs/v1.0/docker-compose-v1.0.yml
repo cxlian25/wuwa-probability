@@ -11,7 +11,7 @@ services:
     volumes:
       - ./logs:/app/logs  # 挂载日志目录（按需配置）
     networks:
-      - app-network
+      - app-net
 
   nginx:
     image: nginx:alpine
