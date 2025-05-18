@@ -1,37 +1,19 @@
 version: '3.8'
-# docker-compose -f docker-compose-app-v1.0.yml up -d
+
 services:
-  # 部署前端项目
-  wuwa-probability-front:
-    image: cxlian/wuwa-probability-front:1.0
-    container_name: wuwa-probability-front
-    restart: always
-    ports:
-      - '80:80'
-    volumes:
-      - ./nginx/html:/usr/share/nginx/html
-    privileged: true
-  # 部署后端项目
-  wuwa-probability:
+  webapp:
     image: cxlian/wuwa-probability:1.0
-    container_name: wuwa-probability-app
-    restart: on-failure
     ports:
-      - "8091:8091"
+      - "8091:8091"  # 主机端口:容器端口
     environment:
-      - TZ=PRC
-      - SERVER_PORT=8091
+      - SPRING_PROFILES_ACTIVE=prod  # 示例环境变量
+    restart: unless-stopped  # 异常退出时自动重启
     volumes:
-      - ./log:/data/log
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+      - ./logs:/app/logs  # 挂载日志目录（按需配置）
     networks:
-      - my-network
+      - app-network
 
-
+# 自定义网络（可选）
 networks:
-  my-network:
+  app-network:
     driver: bridge

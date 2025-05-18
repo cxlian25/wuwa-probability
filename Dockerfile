@@ -1,5 +1,5 @@
 # 基础镜像
-FROM openjdk:8-jre-slim
+FROM openjdk:17-jdk-slim
 
 # 作者
 MAINTAINER cxlian
