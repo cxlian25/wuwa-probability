@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>鸣潮抽卡概率计算器</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+
+        .input-panel {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-left: 30px;
+            padding: 20px 0px 50px 50px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .result-panel {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            padding: 20px 40px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .mode-select {
+            margin-bottom: 20px;
+        }
+        .mode-select .radio-option {
+            display: block;
+            margin: 8px 0;
+            width: auto;
+            margin-bottom: 10px;
+        }
+
+        .mode-select .radio-option input[type="radio"] {
+            vertical-align: middle;
+            margin-right: 6px;
+            margin-bottom: 5px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            width: 210px;
+            flex-shrink: 0; /* 防止标签被压缩 */
+        }
+
+        .input-group input {
+            width: 120px;
+        }
+
+        label {
+            display: inline-block;
+            width: 180px;
+            margin-right: 10px;
+            color: #333;
+        }
+
+        input[type="number"] {
+            text-align: right;
+            width: 120px;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        input[type="checkbox"] {
+            transform: scale(1.2);
+            margin-left: 5px;
+        }
+
+        #need-input {
+            display: none;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        button {
+            margin-top: 12px;
+            background: #409eff;
+            color: white;
+            border: none;
+            padding: 10px 25px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #66b1ff;
+        }
+
+        #result {
+            font-size: 20px;
+            white-space: pre-wrap;
+            font-family: Consolas, monospace;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            min-height: 200px;
+        }
+        .result-note {
+            margin-top: 15px;  /* 与上方结果框的间距 */
+            font-size: 13px;
+            color: #999;
+            white-space: pre-line;
+            line-height: 1.5;
+            padding-left: 5px; /* 与结果框左侧对齐 */
+            border-top: 1px dashed #eee; /* 可选分隔线 */
+            padding-top: 12px; /* 如果有分隔线时需要 */
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="input-panel">
+        <h2>抽卡参数设置</h2>
+
+        <div class="mode-select">
+            <h3>计算模式：</h3>
+            <label class="radio-option">
+                <input type="radio" name="mode" value="1" checked onchange="toggleNeedInput()">
+                不考虑武器
+            </label>
+            <label class="radio-option">
+                <input type="radio" name="mode" value="2" onchange="toggleNeedInput()">
+                只抽一把武器，其余抽共鸣链
+            </label>
+            <label class="radio-option">
+                <input type="radio" name="mode" value="3" onchange="toggleNeedInput()">
+                抽指定共鸣链数量，后抽高精武器（推荐4链或6链）
+            </label>
+        </div>
+
+        <div class="input-group">
+            <label>当前星声数量：</label>
+            <input type="number" id="now_chou" min="0" value="0" required>
+        </div>
+
+        <div class="input-group">
+            <label>当前抽数：</label>
+            <input type="number" id="now_chou_2" min="0" value="0" required>
+        </div>
+
+        <div class="input-group">
+            <label>角色抽数：</label>
+            <input type="number" id="chr_chou" min="0" value="0" required>
+        </div>
+
+        <div class="input-group">
+            <label>武器抽数：</label>
+            <input type="number" id="wea_chou" min="0" value="0" required>
+        </div>
+
+        <div class="input-group">
+            <label>角色池已垫抽数：</label>
+            <input type="number" id="chr_have" min="0" max="80" value="0" required>
+        </div>
+
+        <div class="input-group">
+            <label>武器池已垫抽数：</label>
+            <input type="number" id="wea_have" min="0" max="80" value="0" required>
+        </div>
+
+        <div class="input-group">
+            <label>角色池下一金是否为大保底：</label>
+            <input type="checkbox" id="have_big">
+        </div>
+
+        <div id="need-input">
+            <div class="input-group">
+                <label>目标共鸣链数量：</label>
+                <input type="number" id="need" min="0" max="6" value="4">
+            </div>
+        </div>
+
+        <button onclick="calculate()">开始计算</button>
+    </div>
+
+    <div class="result-panel">
+        <h2>计算结果</h2>
+        <div id="result"></div>
+        <div class="result-note">注：模拟500000次抽卡，因此多次计算结果可能有微小浮动
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;注意 星声/160 与 抽数 会叠加
+        </div>
+        <div class="result-note">QQ：3389036842
+            b站：最后退一格
+        </div>
+        <div class="result-note">欢迎交流！
+        </div>
+    </div>
+</div>
+
+<script>
+        // 模式切换逻辑
+        function toggleNeedInput() {
+            const needDiv = document.getElementById('need-input');
+            const mode = document.querySelector('input[name="mode"]:checked').value;
+            needDiv.style.display = mode === '3' ? 'block' : 'none';
+        }
+
+        // 计算逻辑
+        async function calculate() {
+            // 收集参数
+            const params = {
+                now_chou: parseInt(document.getElementById('now_chou').value)
+                            + 160 * parseInt(document.getElementById('now_chou_2').value),
+                chr_chou: parseInt(document.getElementById('chr_chou').value),
+                wea_chou: parseInt(document.getElementById('wea_chou').value),
+                chr_have: parseInt(document.getElementById('chr_have').value),
+                wea_have: parseInt(document.getElementById('wea_have').value),
+                have_big: document.getElementById('have_big').checked
+            };
+
+            // 验证参数
+            if (Object.values(params).slice(0, 5).some(v => isNaN(v))) {
+                alert('请填写所有必填参数');
+                return;
+            }
+
+            // 确定API地址
+            const mode = document.querySelector('input[name="mode"]:checked').value;
+            let apiUrl = `http://localhost:8080/api/mode_${mode}`;
+
+            // 处理第三种模式
+            if (mode === '3') {
+                const need = parseInt(document.getElementById('need').value);
+                if (isNaN(need) || need < 0) {
+                    alert('请输入有效的共鸣链数量');
+                    return;
+                }
+                apiUrl += `?need=${need}`;
+            }
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(params)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`请求失败: ${response.status}`);
+                }
+
+                const data = await response.json();
+                document.getElementById('result').textContent = data.result;
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('result').textContent = '请求失败，请检查控制台';
+            }
+        }
+
+        // 初始化显示状态
+        toggleNeedInput();
+    </script>
+</body>
+</html>
