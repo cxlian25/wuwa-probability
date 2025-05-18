@@ -27,5 +27,5 @@ services:
 
 # 自定义网络（可选）
 networks:
-  app-network:
+  app-net:
     driver: bridge
