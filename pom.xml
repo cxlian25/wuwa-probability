@@ -88,6 +88,7 @@
 	</dependencies>
 
 	<build>
+		<finalName>wuwa-probability</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
